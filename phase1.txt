@@ -1,0 +1,50 @@
+ //Defusing Phase1
+tdawa@LAPTOP-9P9JOGG3:/mnt/d/Bsc in IT 2019/3rd year/ITS304/Assignment 1_2/Assignment 1/bomb003$ gdb bomb
+GNU gdb (Ubuntu 9.2-0ubuntu1~20.04) 9.2
+Copyright (C) 2020 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from bomb...
+(gdb) b phase_1		 						//We set Breakpoint to avoid exploding the bomb
+Breakpoint 1 at 0x400e8d
+(gdb) r									//Run the program
+Starting program: /mnt/d/Bsc in IT 2019/3rd year/ITS304/Assignment 1_2/Assignment 1/bomb003/bomb
+Welcome to my fiendish little bomb. You have 6 phases with
+which to blow yourself up. Have a nice day!
+hehe							//Entering a random string as a test input
+
+Breakpoint 1, 0x0000000000400e8d in phase_1 ()
+(gdb) disas						//Disassembles the code(Breaking down into pieces)
+Dump of assembler code for function phase_1:
+=> 0x0000000000400e8d <+0>:     sub    $0x8,%rsp
+   0x0000000000400e91 <+4>:     mov    $0x4023b0,%esi
+   0x0000000000400e96 <+9>:     callq  0x40132b <strings_not_equal>  //comparing input with answers
+   0x0000000000400e9b <+14>:    test   %eax,%eax
+   0x0000000000400e9d <+16>:    je     0x400ea4 <phase_1+23>
+   0x0000000000400e9f <+18>:    callq  0x40142a <explode_bomb>
+   0x0000000000400ea4 <+23>:    add    $0x8,%rsp
+   0x0000000000400ea8 <+27>:    retq
+End of assembler dump.
+(gdb) x/s 0x4023b0			
+0x4023b0:       "Border relations with Canada have never been better."
+
+(gdb) r 
+The program being debugged has been started already.
+Start it from the beginning? (y or n) y
+Starting program: /mnt/d/Bsc in IT 2019/3rd year/ITS304/Assignment 1_2/Assignment 1/bomb003/bomb
+Welcome to my fiendish little bomb. You have 6 phases with
+which to blow yourself up. Have a nice day!
+Border relations with Canada have never been better.
+
+Phase 1 defused. How about the next one? //The solution
