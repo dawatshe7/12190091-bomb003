@@ -1,0 +1,78 @@
+Dump of assembler code for function phase_4:
+
+=> 0x0000000000400ffa <+0>:   sub    $0x18,%rsp       
+   0x0000000000400ffe <+4>:   mov    %fs:0x28,%rax
+   0x0000000000401007 <+13>:  mov    %rax,0x8(%rsp)
+   0x000000000040100c <+18>:  xor    %eax,%eax
+   0x000000000040100e <+20>:  lea    0x4(%rsp),%rcx
+   0x0000000000401013 <+25>:  mov    %rsp,%rdx
+   0x0000000000401016 <+28>:  mov    $0x4025af,%esi    			//format of answer: %d %d
+   0x000000000040101b <+33>:  call   0x400bb0 <__isoc99_sscanf@plt>
+   0x0000000000401020 <+38>:  cmp    $0x2,%eax     			//checking if there is two input
+   0x0000000000401023 <+41>:  jne    0x40102b <phase_4+49> 		//explode bomb if not equal
+   0x0000000000401025 <+43>:  cmpl   $0xe,(%rsp)  			//check if the first input is in the range of 14
+   0x0000000000401029 <+47>:  jbe    0x401030 <phase_4+54>
+   0x000000000040102b <+49>:  call   0x40142a <explode_bomb>
+   0x0000000000401030 <+54>:  mov    $0xe,%edx 				//third argument
+   0x0000000000401035 <+59>:  mov    $0x0,%esi  			//second argument(0 is moved to %esi)
+   0x000000000040103a <+64>:  mov    (%rsp),%edi 			// first argument moved to edi. and func4 is called
+   0x000000000040103d <+67>:  call   0x400fbc <func4>
+   0x0000000000401042 <+72>:  cmp    $0x2,%eax 				//check if the return value of <func4> is equals to 0x2
+   0x0000000000401045 <+75>:  jne    0x40104e <phase_4+84>
+   0x0000000000401047 <+77>:  cmpl   $0x2,0x4(%rsp) 			//check if second user input is 0x2
+   0x000000000040104c <+82>:  je     0x401053 <phase_4+89>
+   0x000000000040104e <+84>:  call   0x40142a <explode_bomb>
+   0x0000000000401053 <+89>:  mov    0x8(%rsp),%rax
+   0x0000000000401058 <+94>:  xor    %fs:0x28,%rax
+   0x0000000000401061 <+103>: je     0x401068 <phase_4+110>
+   0x0000000000401063 <+105>: call   0x400b00 <__stack_chk_fail@plt>
+   0x0000000000401068 <+110>: add    $0x18,%rsp
+   0x000000000040106c <+114>: ret 
+End of assembler dump.
+
+$rsp holds our first input. $rsp+4 holds our second input.
+
+We have to compare %eax that has been returned from <func4>. Let us see inside of this function 
+
+
+Dump of assembler code for function func4:
+
+=> 0x0000000000400fbc <+0>:   sub    $0x8,%rsp  
+   0x0000000000400fc0 <+4>:   mov    %edx,%eax  				//eax = 14
+   0x0000000000400fc2 <+6>:   sub    %esi,%eax  				//eax = eax - esi; eax = 14-0 --> 14
+   0x0000000000400fc4 <+8>:   mov    %eax,%ecx  				//eax = 14 is moved to ecx(ecx = 14)
+   0x0000000000400fc6 <+10>:  shr    $0x1f,%ecx 				//0x1f = 31; ecx = 14 >>31; returns most sigfig bit --> 0
+   0x0000000000400fc9 <+13>:  add    %ecx,%eax  				//eax = eax + ecx; eax = 14 + 0 = 14
+   0x0000000000400fcb <+15>:  sar    %eax       				//eax = eax >> 1; 14 >> 1 --> same as eax/2
+   0x0000000000400fcd <+17>:  lea    (%rax,%rsi,1),%ecx    			//ecx = 7(eax + rsi) 
+   0x0000000000400fd0 <+20>:  cmp    %edi,%ecx             			//first input VS ecx
+   0x0000000000400fd2 <+22>:  jle    0x400fe0 <func4+36>    			//if 7 <= first input, jump to line 36
+   0x0000000000400fd4 <+24>:  lea    -0x1(%rcx),%edx        			//edx = rcx - 1(7 - 1 )= 6  rcx is decremented each time
+   0x0000000000400fd7 <+27>:  call   0x400fbc <func4>       			//calling again
+   0x0000000000400fdc <+32>:  add    %eax,%eax              			//eax = eax + return value
+   0x0000000000400fde <+34>:  jmp    0x400ff5 <func4+57>
+   0x0000000000400fe0 <+36>:  mov    $0x0,%eax              			//eax = 0
+   0x0000000000400fe5 <+41>:  cmp    %edi,%ecx              			//ecx = 7; first input vs 7
+   0x0000000000400fe7 <+43>:  jge    0x400ff5 <func4+57>    			//%ecx >= edi --> 7 >= first input,jump to line 57
+   0x0000000000400fe9 <+45>:  lea    0x1(%rcx),%esi         			//%esi = 1 + %rcx --> %esi = 1 + 7 = 8 rcx is incremented each time
+   0x0000000000400fec <+48>:  call   0x400fbc <func4>       			//calling again
+   0x0000000000400ff1 <+53>:  lea    0x1(%rax,%rax,1),%eax
+   0x0000000000400ff5 <+57>:  add    $0x8,%rsp              			//returns the value of eax(2)
+   0x0000000000400ff9 <+61>:  ret
+End of assembler dump.
+
+r
+Welcome to my fiendish little bomb. You have 6 phases with
+which to blow yourself up. Have a nice day!
+Border relations with Canada have never been better.
+Phase 1 defused. How about the next one?
+0 1 1 2 3 5
+That's number 2.  Keep going!
+1 198
+Halfway there!
+4 2
+So you got that one.  Try this one.
+//Solution
+4 2
+since we know that our first input needs to be between 0 and 14 i gave 4 as the first input and it works fine. In fuc4 function we got the last input as 2
+so after i entered 4 2 it worked and the bomb got defused.
